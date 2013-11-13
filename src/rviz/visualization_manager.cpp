@@ -169,7 +169,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
                                                   "Background color for the 3D view.",
                                                   global_options_, SLOT( updateBackgroundColor() ), this );
 
-  fps_property_ = new IntProperty( "Frame Rate", 30,
+  fps_property_ = new IntProperty( "Frame Rate", 600,
                                    "RViz will try to render this many frames per second.",
                                    global_options_, SLOT( updateFps() ), this );
 

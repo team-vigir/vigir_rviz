@@ -636,25 +636,48 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   Ogre::HardwarePixelBufferSharedPtr pixel_buffer = tex->getBuffer();
   Ogre::RenderTexture* render_texture = pixel_buffer->getRenderTarget();
 
-  float left,right,top,bottom;
+  if ( viewport->getCamera()->getProjectionType() == Ogre::PT_PERSPECTIVE )
+  {
+      //ROS_INFO("PERSPECTIVE");
 
-  viewport->getCamera()->getFrustumExtents( left, right, top, bottom );
+      camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
 
-  float x1_rel = (float)x1 / (float)(viewport->getActualWidth()-1);
-  float x2_rel = (float)x2 / (float)(viewport->getActualWidth()-1);
+      float left,right,top,bottom;
 
-  float y1_rel = (float)y1 / (float)(viewport->getActualHeight()-1);
-  float y2_rel = (float)y2 / (float)(viewport->getActualHeight()-1);
+      viewport->getCamera()->getFrustumExtents( left, right, top, bottom );
 
-  camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
-  camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
-  camera_->setNearClipDistance( viewport->getCamera()->getNearClipDistance() );
-  camera_->setFarClipDistance( viewport->getCamera()->getFarClipDistance() );
-  camera_->setFrustumExtents(
-      left+(right-left)*x1_rel,
-      left+(right-left)*x2_rel,
-      top+(bottom-top)*y1_rel,
-      top+(bottom-top)*y2_rel );
+      float x1_rel = (float)x1 / (float)(viewport->getActualWidth()-1);
+      float x2_rel = (float)x2 / (float)(viewport->getActualWidth()-1);
+
+      float y1_rel = (float)y1 / (float)(viewport->getActualHeight()-1);
+      float y2_rel = (float)y2 / (float)(viewport->getActualHeight()-1);
+
+      camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
+      camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
+      camera_->setNearClipDistance( viewport->getCamera()->getNearClipDistance() );
+      camera_->setFarClipDistance( viewport->getCamera()->getFarClipDistance() );
+      camera_->setFrustumExtents(
+          left+(right-left)*x1_rel,
+          left+(right-left)*x2_rel,
+          top+(bottom-top)*y1_rel,
+          top+(bottom-top)*y2_rel );
+  }
+  else
+  {
+      //ROS_INFO("ORTHOGRAPHIC");
+
+      camera_->setProjectionType( Ogre::PT_ORTHOGRAPHIC );
+      camera_->setFixedYawAxis( false );
+
+      float width = viewport->getActualWidth();
+      float height = viewport->getActualHeight();
+
+      Ogre::Matrix4 proj;
+      proj = viewport->getCamera()->getProjectionMatrix();
+      camera_->setCustomProjectionMatrix(true, proj);
+      camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
+      camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
+  }
 
   // create a viewport if there is none
   if (render_texture->getNumViewports() == 0)

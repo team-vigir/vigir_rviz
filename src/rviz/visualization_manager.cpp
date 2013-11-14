@@ -297,6 +297,13 @@ void VisualizationManager::queueRender()
   render_requested_ = 1;
 }
 
+int VisualizationManager::addRenderPanel( RenderPanel* rp )
+{
+  render_panel_list_.push_back(rp);
+  render_panel_render_mask_.push_back(true);
+  return render_panel_list_.size()-1;
+}
+
 void VisualizationManager::onUpdate()
 {
   ros::WallDuration wall_diff = ros::WallTime::now() - last_update_wall_time_;
@@ -305,6 +312,8 @@ void VisualizationManager::onUpdate()
   float ros_dt = ros_diff.toSec();
   last_update_ros_time_ = ros::Time::now();
   last_update_wall_time_ = ros::WallTime::now();
+
+  //ROS_INFO("time since last update: %fs", wall_dt);
 
   if(ros_dt < 0.0)
   {
@@ -355,12 +364,21 @@ void VisualizationManager::onUpdate()
 
   frame_count_++;
 
+  //ROS_INFO("rviz/scenegraph update completed");
+
   if ( render_requested_ || wall_dt > 0.01 )
   {
     render_requested_ = 0;
     boost::mutex::scoped_lock lock(private_->render_mutex_);
-    ogre_root_->renderOneFrame();
+    //ogre_root_->renderOneFrame();
+    for ( int i = 0; i < render_panel_list_.size(); i++ )
+    {
+      if( render_panel_render_mask_[i] )
+        render_panel_list_[i]->getRenderWindow()->update(true);
+    }
   }
+
+  //ROS_INFO("finished rendering one frame");
 }
 
 void VisualizationManager::updateTime()

@@ -639,25 +639,44 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   Ogre::HardwarePixelBufferSharedPtr pixel_buffer = tex->getBuffer();
   Ogre::RenderTexture* render_texture = pixel_buffer->getRenderTarget();
 
-  Ogre::Matrix4 proj_matrix = viewport->getCamera()->getProjectionMatrix();
-  Ogre::Matrix4 scale_matrix = Ogre::Matrix4::IDENTITY;
-  Ogre::Matrix4 trans_matrix = Ogre::Matrix4::IDENTITY;
+  if ( viewport->getCamera()->getProjectionType() == Ogre::PT_PERSPECTIVE )
+  {
+	  Ogre::Matrix4 proj_matrix = viewport->getCamera()->getProjectionMatrix();
+	  Ogre::Matrix4 scale_matrix = Ogre::Matrix4::IDENTITY;
+	  Ogre::Matrix4 trans_matrix = Ogre::Matrix4::IDENTITY;
 
-  float x1_rel = static_cast<float>(x1) / static_cast<float>(viewport->getActualWidth() - 1) - 0.5f;
-  float y1_rel = static_cast<float>(y1) / static_cast<float>(viewport->getActualHeight() - 1) - 0.5f;
-  float x2_rel = static_cast<float>(x2) / static_cast<float>(viewport->getActualWidth() - 1) - 0.5f;
-  float y2_rel = static_cast<float>(y2) / static_cast<float>(viewport->getActualHeight() - 1) - 0.5f;
+	  float x1_rel = static_cast<float>(x1) / static_cast<float>(viewport->getActualWidth() - 1) - 0.5f;
+	  float y1_rel = static_cast<float>(y1) / static_cast<float>(viewport->getActualHeight() - 1) - 0.5f;
+	  float x2_rel = static_cast<float>(x2) / static_cast<float>(viewport->getActualWidth() - 1) - 0.5f;
+	  float y2_rel = static_cast<float>(y2) / static_cast<float>(viewport->getActualHeight() - 1) - 0.5f;
 
-  scale_matrix[0][0] = 1.0 / (x2_rel-x1_rel);
-  scale_matrix[1][1] = 1.0 / (y2_rel-y1_rel);
+	  scale_matrix[0][0] = 1.0 / (x2_rel-x1_rel);
+	  scale_matrix[1][1] = 1.0 / (y2_rel-y1_rel);
 
-  trans_matrix[0][3] -= x1_rel+x2_rel;
-  trans_matrix[1][3] += y1_rel+y2_rel;
+	  trans_matrix[0][3] -= x1_rel+x2_rel;
+	  trans_matrix[1][3] += y1_rel+y2_rel;
 
-  camera_->setCustomProjectionMatrix( true, scale_matrix * trans_matrix * proj_matrix );
+	  camera_->setCustomProjectionMatrix( true, scale_matrix * trans_matrix * proj_matrix );
 
-  camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
-  camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
+	  camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
+	  camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
+  }
+  else
+  {
+      //ROS_INFO("ORTHOGRAPHIC");
+
+      camera_->setProjectionType( Ogre::PT_ORTHOGRAPHIC );
+      camera_->setFixedYawAxis( false );
+
+      float width = viewport->getActualWidth();
+      float height = viewport->getActualHeight();
+
+      Ogre::Matrix4 proj;
+      proj = viewport->getCamera()->getProjectionMatrix();
+      camera_->setCustomProjectionMatrix(true, proj);
+      camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
+      camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
+  }
 
   // create a viewport if there is none
   if (render_texture->getNumViewports() == 0)

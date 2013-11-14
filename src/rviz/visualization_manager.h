@@ -315,6 +315,11 @@ public:
   virtual void setHelpPath( const QString& help_path ) { help_path_ = help_path; }
   virtual QString getHelpPath() const { return help_path_; }
 
+  /** @brief Adds render panel to the list of panels */
+  int addRenderPanel( RenderPanel* rp );
+  void updateRenderMask( int id, bool mask ) { if ( id >= 0 && id < render_panel_render_mask_.size() ) render_panel_render_mask_[id] = mask; }
+
+
 Q_SIGNALS:
 
   /** @brief Emitted before updating all Displays */
@@ -390,6 +395,9 @@ protected:
   FrameManager* frame_manager_;
 
   OgreRenderQueueClearer* ogre_render_queue_clearer_;
+
+  std::vector<RenderPanel*> render_panel_list_;
+  std::vector<bool> render_panel_render_mask_;
 
 private Q_SLOTS:
   void updateFixedFrame();

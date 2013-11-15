@@ -365,7 +365,9 @@ void VisualizationManager::onUpdate()
   {
     render_requested_ = 0;
     boost::mutex::scoped_lock lock(private_->render_mutex_);
-    //ogre_root_->renderOneFrame();
+    if ( render_panel_list_.size() == 0 )
+        ogre_root_->renderOneFrame();
+
     for ( int i = 0; i < render_panel_list_.size(); i++ )
     {
       if( render_panel_render_mask_[i] )

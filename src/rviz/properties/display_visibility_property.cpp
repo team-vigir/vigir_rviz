@@ -34,6 +34,8 @@
 #include "rviz/bit_allocator.h"
 #include "rviz/display.h"
 #include "rviz/display_group.h"
+#include <bitset>
+#include <iostream>
 
 namespace rviz
 {
@@ -57,7 +59,6 @@ DisplayVisibilityProperty::DisplayVisibilityProperty( uint32_t vis_bit,
 DisplayVisibilityProperty::~DisplayVisibilityProperty()
 {
 }
-
 void DisplayVisibilityProperty::update()
 {
   // update name, unless we had a custom name given in the constructor
@@ -68,12 +69,16 @@ void DisplayVisibilityProperty::update()
   if ( getBool() &&
        (getViewFlags( 0 ) & Qt::ItemIsEnabled ) )
   {
+      //std::cout << "set" << std::endl;
     display_->setVisibilityBits( vis_bit_ );
   }
   else
   {
+      //std::cout << "unset" << std::endl;
     display_->unsetVisibilityBits( vis_bit_ );
   }
+  //std::bitset<32> x(vis_bit_);
+  //std::cout << x << std::endl;
 }
 
 bool DisplayVisibilityProperty::setValue( const QVariant& new_value )

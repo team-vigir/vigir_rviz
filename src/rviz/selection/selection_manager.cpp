@@ -636,7 +636,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   Ogre::HardwarePixelBufferSharedPtr pixel_buffer = tex->getBuffer();
   Ogre::RenderTexture* render_texture = pixel_buffer->getRenderTarget();
 
-  if ( viewport->getCamera()->getProjectionType() == Ogre::PT_PERSPECTIVE )
+  //if ( viewport->getCamera()->getProjectionType() == Ogre::PT_PERSPECTIVE )
   {
       //ROS_INFO("PERSPECTIVE");
 
@@ -662,7 +662,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
           top+(bottom-top)*y1_rel,
           top+(bottom-top)*y2_rel );
   }
-  else
+  /*else
   {
       //ROS_INFO("ORTHOGRAPHIC");
 
@@ -677,7 +677,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
       camera_->setCustomProjectionMatrix(true, proj);
       camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
       camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
-  }
+  }*/
 
   // create a viewport if there is none
   if (render_texture->getNumViewports() == 0)

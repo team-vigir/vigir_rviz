@@ -78,6 +78,7 @@ class SelectionManager: public QObject, public Ogre::MaterialManager::Listener, 
 {
 Q_OBJECT
 public:
+
   enum SelectType
   {
     Add,
@@ -198,6 +199,8 @@ public:
 
   PropertyTreeModel* getPropertyModel() { return property_model_; }
 
+  void setOrthoConfig( Ogre::Viewport* viewport, float width, float height );
+
 private Q_SLOTS:
   /** @brief Call updateProperties() on all SelectionHandlers in the
    * current selection. */
@@ -283,6 +286,14 @@ private:
 
   typedef std::map<std::string, ros::Publisher> PublisherMap;
   PublisherMap debug_publishers_;
+
+  struct M_OrthoConfig
+  {
+    float width, height;
+    Ogre::Viewport* viewport;
+  };
+  std::vector<M_OrthoConfig> ortho_config_;
+  QTimer* timer_;
 };
 
 } // namespace rviz

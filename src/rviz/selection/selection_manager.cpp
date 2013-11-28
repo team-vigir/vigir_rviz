@@ -661,7 +661,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
 
   if ( viewport->getCamera()->getProjectionType() == Ogre::PT_PERSPECTIVE )
   {
-      ROS_INFO("PERSPECTIVE");
+      //ROS_INFO("PERSPECTIVE");
 
       camera_->setProjectionType( Ogre::PT_PERSPECTIVE );
 
@@ -687,7 +687,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   }
   else
   {
-      ROS_INFO("ORTHOGRAPHIC");
+      //ROS_INFO("ORTHOGRAPHIC");
 
       camera_->setProjectionType( Ogre::PT_ORTHOGRAPHIC );
       camera_->setFixedYawAxis( false );

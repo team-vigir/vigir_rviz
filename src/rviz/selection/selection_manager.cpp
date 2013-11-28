@@ -603,6 +603,29 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   }
 }
 
+void SelectionManager::setOrthoConfig( Ogre::Viewport* viewport, float width, float height )
+{
+    int i;
+    for(i = 0; i < ortho_config_.size(); i++)
+        if(ortho_config_[i].viewport == viewport)
+            break;
+
+    // if there is no configuration for this viewport, create one
+    if(i == ortho_config_.size())
+    {
+        M_OrthoConfig o;
+        o.viewport = viewport;
+        o.width = width;
+        o.height = height;
+        ortho_config_.push_back(o);
+    }
+    else
+    {
+        ortho_config_[i].width  = width;
+        ortho_config_[i].height = height;
+    }
+}
+
 
 bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
                               int x1, int y1, int x2, int y2,
@@ -670,12 +693,53 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
 
       float width = viewport->getActualWidth();
       float height = viewport->getActualHeight();
+      float ortho_width;
+      float ortho_height;
 
-      Ogre::Matrix4 proj;
-      proj = viewport->getCamera()->getProjectionMatrix();
-      camera_->setCustomProjectionMatrix(true, proj);
-      camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
-      camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
+      int idx;
+      for(idx = 0; idx < ortho_config_.size(); idx++)
+          if(ortho_config_[idx].viewport == viewport)
+              break;
+
+      // if there is no configuration for this viewport, create one
+      if(idx != ortho_config_.size())
+      {
+          ortho_width  = ortho_config_[idx].width;
+          ortho_height = ortho_config_[idx].height;
+      }
+      else
+      {
+          ortho_width  = viewport->getCamera()->getOrthoWindowWidth();
+          ortho_height = viewport->getCamera()->getOrthoWindowHeight();
+      }
+
+      ROS_INFO("  (%f, %f)  (%f, %f)", width, height, ortho_width, ortho_height);
+
+      // mouse coordinates in the ortho CS
+      // normalize mouse coordinates, scale to the ortho view, move to center of ortho window
+      float ortho_x1 = (((float)x1 / width) * ortho_width) - (ortho_width / 2.0);
+      float ortho_x2 = (((float)x2 / width) * ortho_width) - (ortho_width / 2.0);
+      float ortho_y1 = (((float)y1 / height) * ortho_height) - (ortho_height / 2.0);
+      float ortho_y2 = (((float)y2 / height) * ortho_height) - (ortho_height / 2.0);
+
+      Ogre::Vector3 position = viewport->getCamera()->getDerivedPosition();
+      Ogre::Quaternion orientation = viewport->getCamera()->getDerivedOrientation();
+
+      // calculate translation in x based on ortho mouse coordinates
+      double tx = (ortho_x1 + ortho_x2) / 2.0;
+      Ogre::Vector3 right = orientation * Ogre::Vector3::UNIT_X;
+      position = position + (right * tx);
+      // calculate translation in x based on ortho mouse coordinates
+      double ty = (ortho_y1 + ortho_y2) / 2.0;
+      Ogre::Vector3 down = orientation * Ogre::Vector3::UNIT_Y;
+      position = position - (down * ty);
+
+      ROS_INFO("  (%f, %f)  (%f, %f, %f)", tx, ty, position.x, position.y, position.z);
+
+      camera_->setPosition( position );
+      camera_->setOrientation( orientation );
+
+      camera_->setOrthoWindow( x2-x1, y2-y1 );
   }
 
   // create a viewport if there is none

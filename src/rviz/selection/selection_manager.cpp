@@ -664,7 +664,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
 
   if ( viewport->getCamera()->getProjectionType() == Ogre::PT_PERSPECTIVE )
   {
-      ROS_INFO("PERSPECTIVE");
+      //ROS_INFO("PERSPECTIVE");
 
       Ogre::Matrix4 proj_matrix = viewport->getCamera()->getProjectionMatrix();
 	  Ogre::Matrix4 scale_matrix = Ogre::Matrix4::IDENTITY;

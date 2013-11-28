@@ -89,9 +89,9 @@ SelectionManager::SelectionManager(VisualizationManager* manager)
   }
   depth_pixel_box_.data = 0;
 
-  QTimer* timer = new QTimer( this );
-  connect( timer, SIGNAL( timeout() ), this, SLOT( updateProperties() ));
-  timer->start( 200 );
+  timer_ = new QTimer( this );
+  connect( timer_, SIGNAL( timeout() ), this, SLOT( updateProperties() ));
+  timer_->start( 200 );
 }
 
 SelectionManager::~SelectionManager()
@@ -603,6 +603,29 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   }
 }
 
+void SelectionManager::setOrthoConfig( Ogre::Viewport* viewport, float width, float height )
+{
+    int i;
+    for(i = 0; i < ortho_config_.size(); i++)
+        if(ortho_config_[i].viewport == viewport)
+            break;
+
+    // if there is no configuration for this viewport, create one
+    if(i == ortho_config_.size())
+    {
+        M_OrthoConfig o;
+        o.viewport = viewport;
+        o.width = width;
+        o.height = height;
+        ortho_config_.push_back(o);
+    }
+    else
+    {
+        ortho_config_[i].width  = width;
+        ortho_config_[i].height = height;
+    }
+}
+
 
 bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
                               int x1, int y1, int x2, int y2,
@@ -639,11 +662,15 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   Ogre::HardwarePixelBufferSharedPtr pixel_buffer = tex->getBuffer();
   Ogre::RenderTexture* render_texture = pixel_buffer->getRenderTarget();
 
-  //if ( viewport->getCamera()->getProjectionType() == Ogre::PT_PERSPECTIVE )
+  if ( viewport->getCamera()->getProjectionType() == Ogre::PT_PERSPECTIVE )
   {
+<<<<<<< HEAD
       Ogre::Matrix4 proj_matrix = viewport->getCamera()->getProjectionMatrix();
 	  Ogre::Matrix4 scale_matrix = Ogre::Matrix4::IDENTITY;
 	  Ogre::Matrix4 trans_matrix = Ogre::Matrix4::IDENTITY;
+=======
+      ROS_INFO("PERSPECTIVE");
+>>>>>>> - fixing selection
 
 	  float x1_rel = static_cast<float>(x1) / static_cast<float>(viewport->getActualWidth() - 1) - 0.5f;
 	  float y1_rel = static_cast<float>(y1) / static_cast<float>(viewport->getActualHeight() - 1) - 0.5f;
@@ -661,9 +688,9 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
 	  camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
       camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
   }
-  /*else
+  else
   {
-      //ROS_INFO("ORTHOGRAPHIC");
+      ROS_INFO("ORTHOGRAPHIC");
 
       camera_->setCustomProjectionMatrix(false);
       camera_->setProjectionType( Ogre::PT_ORTHOGRAPHIC );
@@ -674,7 +701,6 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
       float ortho_width;
       float ortho_height;
 
-<<<<<<< HEAD
       int idx;
       for(idx = 0; idx < ortho_config_.size(); idx++)
           if(ortho_config_[idx].viewport == viewport)
@@ -692,7 +718,11 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
           ortho_height = viewport->getCamera()->getOrthoWindowHeight();
       }
 
+<<<<<<< HEAD
       //ROS_INFO("  (%f, %f)  (%f, %f)", width, height, ortho_width, ortho_height);
+=======
+      ROS_INFO("  (%f, %f)  (%f, %f)", width, height, ortho_width, ortho_height);
+>>>>>>> - fixing selection
 
       // mouse coordinates in the ortho CS
       // normalize mouse coordinates, scale to the ortho view, move to center of ortho window
@@ -713,21 +743,17 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
       Ogre::Vector3 down = orientation * Ogre::Vector3::UNIT_Y;
       position = position - (down * ty);
 
+<<<<<<< HEAD
       //ROS_INFO("  (%f, %f)  (%f, %f, %f)", tx, ty, position.x, position.y, position.z);
+=======
+      ROS_INFO("  (%f, %f)  (%f, %f, %f)", tx, ty, position.x, position.y, position.z);
+>>>>>>> - fixing selection
 
       camera_->setPosition( position );
       camera_->setOrientation( orientation );
 
       camera_->setOrthoWindow( x2-x1, y2-y1 );
   }
-=======
-      Ogre::Matrix4 proj;
-      proj = viewport->getCamera()->getProjectionMatrix();
-      camera_->setCustomProjectionMatrix(true, proj);
-      camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
-      camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
-  }*/
->>>>>>> - making it work again to merge it to master
 
   // create a viewport if there is none
   if (render_texture->getNumViewports() == 0)

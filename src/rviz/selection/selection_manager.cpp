@@ -89,9 +89,9 @@ SelectionManager::SelectionManager(VisualizationManager* manager)
   }
   depth_pixel_box_.data = 0;
 
-  QTimer* timer = new QTimer( this );
-  connect( timer, SIGNAL( timeout() ), this, SLOT( updateProperties() ));
-  timer->start( 200 );
+  timer_ = new QTimer( this );
+  connect( timer_, SIGNAL( timeout() ), this, SLOT( updateProperties() ));
+  timer_->start( 200 );
 }
 
 SelectionManager::~SelectionManager()
@@ -603,6 +603,29 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   }
 }
 
+void SelectionManager::setOrthoConfig( Ogre::Viewport* viewport, float width, float height )
+{
+    int i;
+    for(i = 0; i < ortho_config_.size(); i++)
+        if(ortho_config_[i].viewport == viewport)
+            break;
+
+    // if there is no configuration for this viewport, create one
+    if(i == ortho_config_.size())
+    {
+        M_OrthoConfig o;
+        o.viewport = viewport;
+        o.width = width;
+        o.height = height;
+        ortho_config_.push_back(o);
+    }
+    else
+    {
+        ortho_config_[i].width  = width;
+        ortho_config_[i].height = height;
+    }
+}
+
 
 bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
                               int x1, int y1, int x2, int y2,
@@ -641,6 +664,8 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
 
   if ( viewport->getCamera()->getProjectionType() == Ogre::PT_PERSPECTIVE )
   {
+      ROS_INFO("PERSPECTIVE");
+
       Ogre::Matrix4 proj_matrix = viewport->getCamera()->getProjectionMatrix();
 	  Ogre::Matrix4 scale_matrix = Ogre::Matrix4::IDENTITY;
 	  Ogre::Matrix4 trans_matrix = Ogre::Matrix4::IDENTITY;

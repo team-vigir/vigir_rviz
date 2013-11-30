@@ -623,6 +623,27 @@ void SelectionManager::setOrthoConfig( Ogre::Viewport* viewport, float width, fl
     }
 }
 
+void SelectionManager::setCameraConfig( Ogre::Viewport* viewport, Ogre::Matrix4 proj_matrix )
+{
+    int i;
+    for(i = 0; i < camera_config_.size(); i++)
+        if(camera_config_[i].viewport == viewport)
+            break;
+
+    // if there is no configuration for this viewport, create one
+    if(i == camera_config_.size())
+    {
+        M_CameraConfig c;
+        c.viewport = viewport;
+        c.proj_matrix = proj_matrix;
+        camera_config_.push_back(c);
+    }
+    else
+    {
+        camera_config_[i].proj_matrix = proj_matrix;
+    }
+}
+
 
 bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
                               int x1, int y1, int x2, int y2,
@@ -667,7 +688,26 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
 
       float left,right,top,bottom;
 
-      viewport->getCamera()->getFrustumExtents( left, right, top, bottom );
+      int idx;
+      for(idx = 0; idx < camera_config_.size(); idx++)
+          if(camera_config_[idx].viewport == viewport)
+              break;
+
+      if(idx != camera_config_.size())
+      {
+          //ROS_INFO(" Selection (%f, %f)", camera_config_[idx].proj_matrix[0][0], camera_config_[idx].proj_matrix[1][1]);
+          viewport->getCamera()->getFrustumExtents( left, right, top, bottom );
+          //ROS_INFO("  before (%f, %f, %f, %f)", left, right, top, bottom);
+          // this assumes symmetric distortion in the projection matrix (bottom == -top, right == -left)
+          top = 0.01 / camera_config_[idx].proj_matrix[1][1];
+          bottom = -top;
+          right = 0.01 / camera_config_[idx].proj_matrix[0][0];
+          left = -right;
+      }
+      else
+          viewport->getCamera()->getFrustumExtents( left, right, top, bottom );
+
+      //ROS_INFO("  after (%f, %f, %f, %f)", left, right, top, bottom);
 
       float x1_rel = (float)x1 / (float)(viewport->getActualWidth()-1);
       float x2_rel = (float)x2 / (float)(viewport->getActualWidth()-1);
@@ -684,11 +724,14 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
           left+(right-left)*x2_rel,
           top+(bottom-top)*y1_rel,
           top+(bottom-top)*y2_rel );
+
+      //ROS_INFO("  (%f, %f)  (%f, %f, %f)", x1_rel, y1_rel, viewport->getCamera()->getDerivedPosition().x, viewport->getCamera()->getDerivedPosition().y, viewport->getCamera()->getDerivedPosition().z);
   }
   else
   {
       //ROS_INFO("ORTHOGRAPHIC");
 
+      camera_->setCustomProjectionMatrix(false);
       camera_->setProjectionType( Ogre::PT_ORTHOGRAPHIC );
       camera_->setFixedYawAxis( false );
 
@@ -714,7 +757,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
           ortho_height = viewport->getCamera()->getOrthoWindowHeight();
       }
 
-      ROS_INFO("  (%f, %f)  (%f, %f)", width, height, ortho_width, ortho_height);
+      //ROS_INFO("  (%f, %f)  (%f, %f)", width, height, ortho_width, ortho_height);
 
       // mouse coordinates in the ortho CS
       // normalize mouse coordinates, scale to the ortho view, move to center of ortho window
@@ -735,7 +778,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
       Ogre::Vector3 down = orientation * Ogre::Vector3::UNIT_Y;
       position = position - (down * ty);
 
-      ROS_INFO("  (%f, %f)  (%f, %f, %f)", tx, ty, position.x, position.y, position.z);
+      //ROS_INFO("  (%f, %f)  (%f, %f, %f)", tx, ty, position.x, position.y, position.z);
 
       camera_->setPosition( position );
       camera_->setOrientation( orientation );

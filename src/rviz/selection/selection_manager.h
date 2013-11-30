@@ -200,6 +200,7 @@ public:
   PropertyTreeModel* getPropertyModel() { return property_model_; }
 
   void setOrthoConfig( Ogre::Viewport* viewport, float width, float height );
+  void setCameraConfig( Ogre::Viewport* viewport, Ogre::Matrix4 proj_matrix );
 
 private Q_SLOTS:
   /** @brief Call updateProperties() on all SelectionHandlers in the
@@ -293,6 +294,14 @@ private:
     Ogre::Viewport* viewport;
   };
   std::vector<M_OrthoConfig> ortho_config_;
+
+  struct M_CameraConfig
+  {
+    Ogre::Matrix4 proj_matrix;
+    Ogre::Viewport* viewport;
+  };
+  std::vector<M_CameraConfig> camera_config_;
+
   QTimer* timer_;
 };
 

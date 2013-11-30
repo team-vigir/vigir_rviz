@@ -626,6 +626,27 @@ void SelectionManager::setOrthoConfig( Ogre::Viewport* viewport, float width, fl
     }
 }
 
+void SelectionManager::setCameraConfig( Ogre::Viewport* viewport, Ogre::Matrix4 proj_matrix )
+{
+    int i;
+    for(i = 0; i < camera_config_.size(); i++)
+        if(camera_config_[i].viewport == viewport)
+            break;
+
+    // if there is no configuration for this viewport, create one
+    if(i == camera_config_.size())
+    {
+        M_CameraConfig c;
+        c.viewport = viewport;
+        c.proj_matrix = proj_matrix;
+        camera_config_.push_back(c);
+    }
+    else
+    {
+        camera_config_[i].proj_matrix = proj_matrix;
+    }
+}
+
 
 bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
                               int x1, int y1, int x2, int y2,

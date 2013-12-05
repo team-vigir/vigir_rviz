@@ -122,6 +122,7 @@ VisualizationManager::VisualizationManager( RenderPanel* render_panel, WindowMan
 , frame_count_(0)
 , window_manager_(wm)
 , private_( new VisualizationManagerPrivate )
+, active_view_id_(0)
 , default_visibility_bit_( visibility_bit_allocator_.allocBit() )
 {
   frame_manager_ = new FrameManager();
@@ -371,7 +372,10 @@ void VisualizationManager::onUpdate()
     for ( int i = 0; i < render_panel_list_.size(); i++ )
     {
       if( render_panel_render_mask_[i] )
+      {
+        active_view_id_ = i;
         render_panel_list_[i]->getRenderWindow()->update(true);
+      }
     }
   }
 

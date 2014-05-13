@@ -3,8 +3,8 @@
 <<<<<<< HEAD
   <version>1.11.7</version>
 =======
-  <version>1.10.15</version>
->>>>>>> 1.10.15
+  <version>1.10.16</version>
+>>>>>>> 1.10.16
   <description>
      3D visualization tool for ROS.
   </description>

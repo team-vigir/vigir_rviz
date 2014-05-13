@@ -2,6 +2,7 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+<<<<<<< HEAD
 1.11.7 (2015-03-02)
 -------------------
 * Fixed a bug where the timestamp was not set for the /initialpose message published by the 2D Pose Estimate tool.
@@ -102,6 +103,19 @@ Changelog for package rviz
 * upgrade ogre model meshs with the OgreMeshUpgrader from ogre 1.9
 * Changed TF listener to use a dedicated thread.
 * Speed up point cloud rendering by caching some computations and using proper loop iterations
+=======
+Forthcoming
+-----------
+* Fix an issue with rendering laser scans: `#762 <https://github.com/ros-visualization/rviz/issues/762>`_
+* Contributors: Vincent Rabaud, William Woodall
+
+1.10.15 (2014-05-01)
+--------------------
+* Forward ported #707
+  Update frame_manager.cpp
+  Changed TF listener to use a dedicated thread.
+* Fix segfault on exit for OSX
+>>>>>>> changelog
 * Fixed rendering of mesh resource type markers with respect to texture rendering and color tinting
 * Fix segfault on exit for OSX
 * Fix memory leak in BillboardLine destructor (material not being destroyed correctly)

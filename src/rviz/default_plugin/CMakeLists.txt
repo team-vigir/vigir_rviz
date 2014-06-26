@@ -29,6 +29,7 @@ qt4_wrap_cpp(MOC_FILES
   pose_array_display.h
   pose_display.h
   range_display.h
+  relative_humidity_display.h
   robot_model_display.h
   temperature_display.h
   tf_display.h
@@ -85,6 +86,7 @@ set(SOURCE_FILES
   pose_array_display.cpp
   pose_display.cpp
   range_display.cpp
+  relative_humidity_display.cpp
   robot_model_display.cpp
   temperature_display.cpp
   tf_display.cpp
@@ -107,7 +109,7 @@ set(SOURCE_FILES
 )
 
 add_library(default_plugin ${SOURCE_FILES})
-target_link_libraries(default_plugin ${PROJECT_NAME} ${catkin_LIBRARIES} ${QT_LIBRARIES} ${OGRE_LIBRARIES} ${Boost_LIBRARIES} ${urdfdom_LIBRARIES})
+target_link_libraries(default_plugin ${PROJECT_NAME} ${catkin_LIBRARIES} ${QT_LIBRARIES} ${OGRE_OV_LIBRARIES_ABS} ${Boost_LIBRARIES} ${urdfdom_LIBRARIES})
 
 install(TARGETS default_plugin
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

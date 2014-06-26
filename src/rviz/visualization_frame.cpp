@@ -57,8 +57,8 @@
 #include <ros/package.h>
 #include <ros/init.h>
 
-#include <OGRE/OgreRenderWindow.h>
-#include <OGRE/OgreMeshManager.h>
+#include <OgreRenderWindow.h>
+#include <OgreMeshManager.h>
 
 #include <ogre_helpers/initialization.h>
 
@@ -155,6 +155,7 @@ VisualizationFrame::VisualizationFrame( QWidget* parent )
 
 VisualizationFrame::~VisualizationFrame()
 {
+  delete render_panel_;
   delete manager_;
 
   for( int i = 0; i < custom_panels_.size(); i++ )

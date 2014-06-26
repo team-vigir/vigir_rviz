@@ -46,7 +46,11 @@
 #include <ros/package.h> // This dependency should be moved out of here, it is just used for a search path.
 #include <ros/console.h>
 
-#include <OGRE/OgreRenderWindow.h>
+#include <OgreRenderWindow.h>
+#include <OgreSceneManager.h>
+#if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2 )
+#include <OgreOverlaySystem.h>
+#endif
 
 #include "rviz/env_config.h"
 #include "rviz/ogre_helpers/ogre_logging.h"
@@ -60,6 +64,7 @@ namespace rviz
 
 RenderSystem* RenderSystem::instance_ = 0;
 int RenderSystem::force_gl_version_ = 0;
+bool RenderSystem::force_no_stereo_ = false;
 
 RenderSystem* RenderSystem::get()
 {
@@ -76,7 +81,15 @@ void RenderSystem::forceGlVersion( int version )
   ROS_INFO_STREAM( "Forcing OpenGl version " << (float)version / 100.0 << "." );
 }
 
+void RenderSystem::forceNoStereo()
+{
+  force_no_stereo_ = true;
+  ROS_INFO("Forcing Stereo OFF");
+}
+
 RenderSystem::RenderSystem()
+: ogre_overlay_system_(NULL)
+, stereo_supported_(false)
 {
   OgreLogging::configureLogging();
 
@@ -84,6 +97,9 @@ RenderSystem::RenderSystem()
 
   setupDummyWindowId();
   ogre_root_ = new Ogre::Root( rviz_path+"/ogre_media/plugins.cfg" );
+#if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2 )
+  ogre_overlay_system_ = new Ogre::OverlaySystem();
+#endif
   loadOgrePlugins();
   setupRenderSystem();
   ogre_root_->initialise(false);
@@ -91,7 +107,15 @@ RenderSystem::RenderSystem()
   detectGlVersion();
   setupResources();
   Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
- }
+}
+
+void RenderSystem::prepareOverlays(Ogre::SceneManager* scene_manager)
+{
+#if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2 )
+  if (ogre_overlay_system_)
+    scene_manager->addRenderQueueListener(ogre_overlay_system_);
+#endif
+}
 
 void RenderSystem::setupDummyWindowId()
 {
@@ -336,16 +360,82 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow( intptr_t window_id, unsigned
   std::ostringstream stream;
   stream << "OgreWindow(" << windowCounter++ << ")";
 
+
+  // don't bother trying stereo if Ogre does not support it.
+#if !OGRE_STEREO_ENABLE
+  force_no_stereo_ = true;
+#endif
+
+  // attempt to create a stereo window
+  bool is_stereo = false;
+  if (!force_no_stereo_)
+  {
+    params["stereoMode"] = "Frame Sequential";
+    window = tryMakeRenderWindow( stream.str(), width, height, &params, 100);
+    params.erase("stereoMode");
+
+    if (window)
+    {
+#if OGRE_STEREO_ENABLE
+      is_stereo = window->isStereoEnabled();
+#endif
+      if (!is_stereo)
+      {
+        // Created a non-stereo window.  Discard it and try again (below)
+        // without the stereo parameter.
+        ogre_root_->detachRenderTarget(window);
+        window->destroy();
+        window = NULL;
+        stream << "x";
+        is_stereo = false;
+      }
+    }
+  }
+
+  if ( window == NULL )
+  {
+    window = tryMakeRenderWindow( stream.str(), width, height, &params, 100);
+  }
+
+  if( window == NULL )
+  {
+    ROS_ERROR( "Unable to create the rendering window after 100 tries." );
+    assert(false);
+  }
+
+  if (window)
+  {
+    window->setActive(true);
+    //window->setVisible(true);
+    window->setAutoUpdated(false);
+  }
+
+  stereo_supported_ = is_stereo;
+
+  ROS_INFO_ONCE("Stereo is %s", stereo_supported_ ? "SUPPORTED" : "NOT SUPPORTED");
+
+  return window;
+}
+
+Ogre::RenderWindow* RenderSystem::tryMakeRenderWindow(
+      const std::string& name,
+      unsigned int width,
+      unsigned int height,
+      const Ogre::NameValuePairList* params,
+      int max_attempts )
+{
+  Ogre::RenderWindow *window = NULL;
+  int attempts = 0;
+
 #ifdef Q_WS_X11
   old_error_handler = XSetErrorHandler( &checkBadDrawable );
 #endif
 
-  int attempts = 0;
-  while (window == NULL && (attempts++) < 100)
+  while (window == NULL && (attempts++) < max_attempts)
   {
     try
     {
-      window = ogre_root_->createRenderWindow( stream.str(), width, height, false, &params );
+      window = ogre_root_->createRenderWindow( name, width, height, false, params );
 
       // If the driver bug happened, tell Ogre we are done with that
       // window and then try again.
@@ -368,25 +458,13 @@ Ogre::RenderWindow* RenderSystem::makeRenderWindow( intptr_t window_id, unsigned
   XSetErrorHandler( old_error_handler );
 #endif
 
-  if( window == NULL )
-  {
-    ROS_ERROR( "Unable to create the rendering window after 100 tries." );
-    assert(false);
-  }
-
-  if( attempts > 1 )
+  if( window && attempts > 1 )
   {
     ROS_INFO( "Created render window after %d attempts.", attempts );
   }
 
-  if (window)
-  {
-    window->setActive(true);
-    //window->setVisible(true);
-    window->setAutoUpdated(false);
-  }
-
   return window;
 }
+
 
 } // end namespace rviz

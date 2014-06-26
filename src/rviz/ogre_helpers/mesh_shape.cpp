@@ -29,11 +29,11 @@
 
 #include "mesh_shape.h"
 
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreEntity.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreManualObject.h>
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+#include <OgreEntity.h>
+#include <OgreMaterialManager.h>
+#include <OgreManualObject.h>
 
 #include <ros/console.h>
 #include <boost/lexical_cast.hpp>
@@ -55,6 +55,7 @@ MeshShape::~MeshShape()
   // destroy the entity first
   if (entity_)
   {
+    entity_->detachFromParent();
     scene_manager_->destroyEntity( entity_ );
     entity_ = NULL;
   }
@@ -124,7 +125,8 @@ void MeshShape::endTriangles()
   {
     started_ = false;
     manual_object_->end();
-    std::string name = "ConvertedMeshShape@" + boost::lexical_cast<std::string>(this);
+    static uint32_t count = 0;
+    std::string name = "ConvertedMeshShape@" + boost::lexical_cast<std::string>(count++);
     manual_object_->convertToMesh(name);
     entity_ = scene_manager_->createEntity(name);
     if (entity_)

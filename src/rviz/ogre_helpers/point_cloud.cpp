@@ -30,16 +30,19 @@
 #include "point_cloud.h"
 #include <ros/assert.h>
 
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreQuaternion.h>
-#include <OGRE/OgreManualObject.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreBillboardSet.h>
-#include <OGRE/OgreBillboard.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreTextureManager.h>
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
+#include <OgreManualObject.h>
+#include <OgreMaterialManager.h>
+#include <OgreBillboardSet.h>
+#include <OgreBillboard.h>
+#include <OgreTexture.h>
+#include <OgreTextureManager.h>
+#include <OgreSharedPtr.h>
+#include <OgreTechnique.h>
+#include <OgreCamera.h>
 
 #include <sstream>
 
@@ -165,6 +168,12 @@ PointCloud::PointCloud()
   clear();
 }
 
+static void removeMaterial(Ogre::MaterialPtr& material)
+{
+  Ogre::ResourcePtr resource(material);
+  Ogre::MaterialManager::getSingleton().remove(resource);
+}
+
 PointCloud::~PointCloud()
 {
   clear();
@@ -176,12 +185,12 @@ PointCloud::~PointCloud()
   tile_material_->unload();
   box_material_->unload();
 
-  Ogre::MaterialManager::getSingleton().remove(point_material_);
-  Ogre::MaterialManager::getSingleton().remove(square_material_);
-  Ogre::MaterialManager::getSingleton().remove(flat_square_material_);
-  Ogre::MaterialManager::getSingleton().remove(sphere_material_);
-  Ogre::MaterialManager::getSingleton().remove(tile_material_);
-  Ogre::MaterialManager::getSingleton().remove(box_material_);
+  removeMaterial(point_material_);
+  removeMaterial(square_material_);
+  removeMaterial(flat_square_material_);
+  removeMaterial(sphere_material_);
+  removeMaterial(tile_material_);
+  removeMaterial(box_material_);
 }
 
 const Ogre::AxisAlignedBox& PointCloud::getBoundingBox() const
@@ -528,6 +537,7 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
         ROS_ASSERT(op->vertexData->vertexCount + op->vertexData->vertexStart <= rend->getBuffer()->getNumVertices());
         vbuf->unlock();
         rend->setBoundingBox(aabb);
+        bounding_box_.merge(aabb);
       }
 
       buffer_size = std::min<int>( VERTEX_BUFFER_CAPACITY, (num_points - current_point)*vpp );
@@ -563,11 +573,10 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
     }
     else
     {
-      Ogre::Root::getSingletonPtr()->convertColourValue( p.color, &color );
+      root->convertColourValue( p.color, &color );
     }
 
     aabb.merge(p.position);
-    bounding_box_.merge( p.position );
     bounding_radius_ = std::max( bounding_radius_, p.position.squaredLength() );
 
     float x = p.position.x;
@@ -597,6 +606,7 @@ void PointCloud::addPoints(Point* points, uint32_t num_points)
 
   op->vertexData->vertexCount = current_vertex_count - op->vertexData->vertexStart;
   rend->setBoundingBox(aabb);
+  bounding_box_.merge(aabb);
   ROS_ASSERT(op->vertexData->vertexCount + op->vertexData->vertexStart <= rend->getBuffer()->getNumVertices());
 
   vbuf->unlock();

@@ -111,9 +111,9 @@
   </class>
   <class name="rviz/Polygon" type="rviz::PolygonDisplay" base_class_type="rviz::Display">
     <description>
-      Displays data from a geometry_msgs::Polygon message as lines.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Polygon"&gt;More Information&lt;/a&gt;.
+      Displays data from a geometry_msgs::PolygonStamped message as lines.  &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Polygon"&gt;More Information&lt;/a&gt;.
     </description>
-    <message_type>geometry_msgs/Polygon</message_type>
+    <message_type>geometry_msgs/PolygonStamped</message_type>
   </class>
   <class name="rviz/Pose" type="rviz::PoseDisplay" base_class_type="rviz::Display">
     <description>
@@ -132,6 +132,12 @@
       Displays the data from sensor_msgs::Range messages as cones. &lt;a href="http://www.ros.org/wiki/rviz/DisplayTypes/Range"&gt;More Information&lt;/a&gt;
     </description>
     <message_type>sensor_msgs/Range</message_type>
+  </class>
+  <class name="rviz/RelativeHumidity" type="rviz::RelativeHumidityDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays the data from sensor_msgs::RelativeHumidity.
+    </description>
+    <message_type>sensor_msgs/RelativeHumidity</message_type>
   </class>
   <class name="rviz/RobotModel" type="rviz::RobotModelDisplay" base_class_type="rviz::Display">
     <description>

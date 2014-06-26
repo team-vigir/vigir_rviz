@@ -29,9 +29,9 @@
 
 #include <QColor>
 
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreWireBoundingBox.h>
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+#include <OgreWireBoundingBox.h>
 
 #include <ros/time.h>
 
@@ -854,13 +854,13 @@ bool PointCloudCommon::transformCloud(const CloudInfoPtr& cloud_info, bool updat
     color_trans->transform(cloud_info->message_, PointCloudTransformer::Support_Color, transform, cloud_points);
   }
 
-  for (size_t i = 0; i < size; ++i)
+  for (V_PointCloudPoint::iterator cloud_point = cloud_points.begin(); cloud_point != cloud_points.end(); ++cloud_point)
   {
-    if (!validateFloats(cloud_points[i].position))
+    if (!validateFloats(cloud_point->position))
     {
-      cloud_points[i].position.x = 999999.0f;
-      cloud_points[i].position.y = 999999.0f;
-      cloud_points[i].position.z = 999999.0f;
+      cloud_point->position.x = 999999.0f;
+      cloud_point->position.y = 999999.0f;
+      cloud_point->position.z = 999999.0f;
     }
   }
 

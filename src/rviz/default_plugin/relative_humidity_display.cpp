@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSceneManager.h>
 
 #include <ros/time.h>
 
@@ -40,18 +40,18 @@
 #include "rviz/properties/int_property.h"
 #include "rviz/validate_floats.h"
 
-#include "fluid_pressure_display.h"
+#include "relative_humidity_display.h"
 
 namespace rviz
 {
 
-FluidPressureDisplay::FluidPressureDisplay()
+RelativeHumidityDisplay::RelativeHumidityDisplay()
   : point_cloud_common_( new PointCloudCommon( this ))
 {
   queue_size_property_ = new IntProperty( "Queue Size", 10,
-                                          "Advanced: set the size of the incoming FluidPressure message queue. "
+                                          "Advanced: set the size of the incoming RelativeHumidity message queue. "
                                           " Increasing this is useful if your incoming TF data is delayed significantly "
-                                          "from your FluidPressure data, but it can greatly increase memory usage if the messages are big.",
+                                          "from your RelativeHumidity data, but it can greatly increase memory usage if the messages are big.",
                                           this, SLOT( updateQueueSize() ));
 
   // PointCloudCommon sets up a callback queue with a thread for each
@@ -59,33 +59,30 @@ FluidPressureDisplay::FluidPressureDisplay()
   update_nh_.setCallbackQueue( point_cloud_common_->getCallbackQueue() );
 }
 
-FluidPressureDisplay::~FluidPressureDisplay()
+RelativeHumidityDisplay::~RelativeHumidityDisplay()
 {
   delete point_cloud_common_;
 }
 
-void FluidPressureDisplay::onInitialize()
+void RelativeHumidityDisplay::onInitialize()
 {
   MFDClass::onInitialize();
   point_cloud_common_->initialize( context_, scene_node_ );
 
   // Set correct initial values
-  subProp("Channel Name")->setValue("fluid_pressure");
+  subProp("Channel Name")->setValue("relative_humidity");
   subProp("Autocompute Intensity Bounds")->setValue(false);
-  subProp("Min Intensity")->setValue(98000); // Typical 'low' atmosphereic pressure in Pascal
-  subProp("Max Intensity")->setValue(105000); // Typica 'high' atmosphereic pressure in Pascal
+  subProp("Min Intensity")->setValue(0.0); // 0% relative humidity
+  subProp("Max Intensity")->setValue(1.0); // 100% relative humidity
 }
 
-void FluidPressureDisplay::updateQueueSize()
+void RelativeHumidityDisplay::updateQueueSize()
 {
   tf_filter_->setQueueSize( (uint32_t) queue_size_property_->getInt() );
 }
 
-void FluidPressureDisplay::processMessage( const sensor_msgs::FluidPressureConstPtr& msg )
+void RelativeHumidityDisplay::processMessage( const sensor_msgs::RelativeHumidityConstPtr& msg )
 {
-  // Filter any nan values out of the cloud.  Any nan values that make it through to PointCloudBase
-  // will get their points put off in lala land, but it means they still do get processed/rendered
-  // which can be a big performance hit
   sensor_msgs::PointCloud2Ptr filtered(new sensor_msgs::PointCloud2);
 
   // Create fields
@@ -104,24 +101,24 @@ void FluidPressureDisplay::processMessage( const sensor_msgs::FluidPressureConst
   z.offset = 8;
   z.datatype = sensor_msgs::PointField::FLOAT32;
   z.count = 1;
-  sensor_msgs::PointField fluid_pressure;
-  fluid_pressure.name = "fluid_pressure";
-  fluid_pressure.offset = 12;
-  fluid_pressure.datatype = sensor_msgs::PointField::FLOAT64;
-  fluid_pressure.count = 1;
+  sensor_msgs::PointField relative_humidity;
+  relative_humidity.name = "relative_humidity";
+  relative_humidity.offset = 12;
+  relative_humidity.datatype = sensor_msgs::PointField::FLOAT64;
+  relative_humidity.count = 1;
 
   // Create pointcloud from message
   filtered->header = msg->header;
   filtered->fields.push_back(x);
   filtered->fields.push_back(y);
   filtered->fields.push_back(z);
-  filtered->fields.push_back(fluid_pressure);
+  filtered->fields.push_back(relative_humidity);
   filtered->data.resize(20);
-  const float zero_float = 0.0; // FluidPressure is always on its tf frame
+  const float zero_float = 0.0; // RelativeHumidity is always on its tf frame
   memcpy(&filtered->data[x.offset], &zero_float, 4);
   memcpy(&filtered->data[y.offset], &zero_float, 4);
   memcpy(&filtered->data[z.offset], &zero_float, 4);
-  memcpy(&filtered->data[fluid_pressure.offset], &msg->fluid_pressure, 8);
+  memcpy(&filtered->data[relative_humidity.offset], &msg->relative_humidity, 8);
   filtered->height = 1;
   filtered->width = 1;
   filtered->is_bigendian = false;
@@ -133,7 +130,7 @@ void FluidPressureDisplay::processMessage( const sensor_msgs::FluidPressureConst
 }
 
 
-void FluidPressureDisplay::update( float wall_dt, float ros_dt )
+void RelativeHumidityDisplay::update( float wall_dt, float ros_dt )
 {
   point_cloud_common_->update( wall_dt, ros_dt );
 
@@ -144,7 +141,7 @@ void FluidPressureDisplay::update( float wall_dt, float ros_dt )
   subProp("Autocompute Intensity Bounds")->hide();
 }
 
-void FluidPressureDisplay::reset()
+void RelativeHumidityDisplay::reset()
 {
   MFDClass::reset();
   point_cloud_common_->reset();
@@ -153,4 +150,4 @@ void FluidPressureDisplay::reset()
 } // namespace rviz
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( rviz::FluidPressureDisplay, rviz::Display )
+PLUGINLIB_EXPORT_CLASS( rviz::RelativeHumidityDisplay, rviz::Display )

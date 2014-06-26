@@ -185,7 +185,7 @@ add_library( ${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
-  ${OGRE_LIBRARIES}
+  ${OGRE_OV_LIBRARIES_ABS}
   ${OPENGL_LIBRARIES}
   ${QT_LIBRARIES}
   ${urdfdom_LIBRARIES}
@@ -202,12 +202,11 @@ if (NOT ASSIMP_FOUND)
   pkg_check_modules(ASSIMP assimp)
 endif()
 if (ASSIMP_FOUND)
-  if( ${ASSIMP_VERSION} STRGREATER "2.0.0" )
-    set(IS_ASSIMP3 1)
-    add_definitions(-DIS_ASSIMP3)
-    message(STATUS "Found assimp v3")
+  if( NOT ${ASSIMP_VERSION} VERSION_LESS "2.0.1150" )
+    add_definitions(-DASSIMP_UNIFIED_HEADER_NAMES)
+    message(STATUS "Assimp version has unified headers")
   else()
-    message(STATUS "Found assimp v2")
+    message(STATUS "Assimp version does not have unified headers")
   endif()
   include_directories(${ASSIMP_INCLUDE_DIRS})
   link_directories(${ASSIMP_LIBRARY_DIRS})
@@ -219,13 +218,18 @@ else()
   set(ASSIMP_CFLAGS_OTHER)
   set(ASSIMP_LINK_FLAGS)
   set(ASSIMP_INCLUDE_DIRS)
-  set(IS_ASSIMP3 0) # most likely not
 endif()
+
+find_package(PkgConfig)
+pkg_check_modules(NEW_YAMLCPP yaml-cpp>=0.5)
+if(NEW_YAMLCPP_FOUND)
+add_definitions(-DRVIZ_HAVE_YAMLCPP_05)
+endif(NEW_YAMLCPP_FOUND)
 
 ########### The rviz executable ###########
 add_executable(executable main.cpp)
 
-target_link_libraries(executable ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_LIBRARIES})
+target_link_libraries(executable ${PROJECT_NAME} ${QT_LIBRARIES} ${OGRE_OV_LIBRARIES_ABS})
 set_target_properties(executable
                       PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 
@@ -236,3 +240,6 @@ install(TARGETS executable ${PROJECT_NAME}
 install(DIRECTORY ./
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h")
+
+install(TARGETS executable
+  DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})

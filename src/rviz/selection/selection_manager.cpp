@@ -603,6 +603,27 @@ void SelectionManager::renderAndUnpack(Ogre::Viewport* viewport, uint32_t pass, 
   }
 }
 
+void SelectionManager::setCameraConfig( Ogre::Viewport* viewport, Ogre::Matrix4 proj_matrix )
+{
+    int i;
+    for(i = 0; i < camera_config_.size(); i++)
+        if(camera_config_[i].viewport == viewport)
+            break;
+
+    // if there is no configuration for this viewport, create one
+    if(i == camera_config_.size())
+    {
+        M_CameraConfig c;
+        c.viewport = viewport;
+        c.proj_matrix = proj_matrix;
+        camera_config_.push_back(c);
+    }
+    else
+    {
+        camera_config_[i].proj_matrix = proj_matrix;
+    }
+}
+
 void SelectionManager::setOrthoConfig( Ogre::Viewport* viewport, float width, float height )
 {
     int i;
@@ -664,7 +685,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
 
   if ( viewport->getCamera()->getProjectionType() == Ogre::PT_PERSPECTIVE )
   {
-	  Ogre::Matrix4 proj_matrix = viewport->getCamera()->getProjectionMatrix();
+      Ogre::Matrix4 proj_matrix = viewport->getCamera()->getProjectionMatrix();
 	  Ogre::Matrix4 scale_matrix = Ogre::Matrix4::IDENTITY;
 	  Ogre::Matrix4 trans_matrix = Ogre::Matrix4::IDENTITY;
 
@@ -682,7 +703,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
 	  camera_->setCustomProjectionMatrix( true, scale_matrix * trans_matrix * proj_matrix );
 
 	  camera_->setPosition( viewport->getCamera()->getDerivedPosition() );
-	  camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
+      camera_->setOrientation( viewport->getCamera()->getDerivedOrientation() );
   }
   else
   {

@@ -2,6 +2,58 @@
 Changelog for package rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.3 (2014-06-26)
+-------------------
+* remove explicit dependency on urdfdom
+  urdfdom is provided via urdf and catkin_* CMake variables.
+  The current setup was unbalanced anyways because along with urdfdom, urdfdom_headers should have been being depended on and used.
+  This precipitated from urdfdom's rosdep key changing as it became a system dependency in Indigo.
+* Add ability to delete all markers in Marker plugin
+* fix hidden cursor bug
+  On some systems loading a pixmap from an svg file can fail.  On these machines
+  an empty cursor results, meaning the cursor is invisible inside Rviz.  This
+  works around the problem by using an arrow cursor when the desired cursor
+  pixmap canot be loaded.
+* Install rviz to the global bin
+* Added display for sensor_msgs/RelativeHumidity
+* Contributors: Acorn Pooley, Adam Leeper, Chad Rockey, Dave Coleman, William Woodall, hersh, trainman419
+
+1.11.2 (2014-05-13)
+-------------------
+* Fix an issue with rendering laser scans: `#762 <https://github.com/ros-visualization/rviz/issues/762>`_
+* Fix an issue with using boost::signal instead of boost::signal2 with tf
+  tf recently moved to boost::signal2, so the effort display needed to be updated too
+  I made it so that it would conditionally use boost::signal2 if the tf version is greater than or equal to 1.11.3
+  I also fixed some compiler warnings in this code
+  closes `#700 <https://github.com/ros-visualization/rviz/issues/700>`_
+* Contributors: Vincent Rabaud, William Woodall
+
+1.11.1 (2014-05-01)
+-------------------
+* fix fragment reference in point_cloud_box.material
+  Closes `#759 <https://github.com/ros-visualization/rviz/issues/759>`_
+* upgrade ogre model meshs with the OgreMeshUpgrader from ogre 1.9
+* Changed TF listener to use a dedicated thread.
+* Speed up point cloud rendering by caching some computations and using proper loop iterations
+* Fixed rendering of mesh resource type markers with respect to texture rendering and color tinting
+* Fix segfault on exit for OSX
+* Fix memory leak in BillboardLine destructor (material not being destroyed correctly)
+* Fix disabling of groups (`#709 <https://github.com/ros-visualization/rviz/issues/709>`_)
+  This was broken with commit 5897285, which reverted the changes in
+  commit c6dacb1, but rather than only removing the change concerning
+  the read-only attribute, commented out the entire check, including
+  the ``parent_->getDisableChildren()`` call (which existed prior to
+  commit 5897285).
+* Add missing libraries to rviz link step, fixes OS X build.
+* fix failing sip bindings when path contains spaces
+* EffortDisplay: Added a check to avoid segfaults when receiving a joint state without efforts
+* Contributors: Dirk Thomas, Hans Gaiser, Jordan Brindza, Mike Purvis, Mirko, Siegfried-A. Gevatter Pujals, Timm Linder, Vincent Rabaud, William Woodall
+
+1.11.0 (2014-03-04)
+-------------------
+* fixing problems with urdfdom_headers 0.3.0
+* Contributors: William Woodall
+
 1.10.16 (2014-05-13)
 --------------------
 * Fix an issue with rendering laser scans: `#762 <https://github.com/ros-visualization/rviz/issues/762>`_

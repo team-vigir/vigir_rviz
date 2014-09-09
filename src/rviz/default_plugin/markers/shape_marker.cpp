@@ -74,6 +74,7 @@ void ShapeMarker::onNewMessage( const MarkerConstPtr& old_message,
       break;
     }
     shape_ = new Shape( shape_type, context_->getSceneManager(), scene_node_ );
+    shape_->setUserData(Ogre::Any(new_message->ns + std::string(" ") + boost::lexical_cast<std::string>(new_message->id)));
 
     handler_.reset( new MarkerSelectionHandler( this, MarkerID( new_message->ns, new_message->id ), context_ ));
     handler_->addTrackedObjects( shape_->getRootNode() );

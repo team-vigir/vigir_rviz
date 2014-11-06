@@ -46,8 +46,8 @@ FrameManager::FrameManager(boost::shared_ptr<tf::TransformListener> tf)
   else tf_ = tf;
 
 =======
-  tf_.reset(new tf::TransformListener(ros::NodeHandle(), ros::Duration(10*60), true));
->>>>>>> Update frame_manager.cpp
+  tf_.reset(new tf::TransformListener(ros::NodeHandle(), ros::Duration(60), true));
+>>>>>>> - changing framemanager to only store 1min of tf messages instead of 10
   setSyncMode( SyncOff );
   setPause(false);
 }

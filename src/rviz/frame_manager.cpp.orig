@@ -42,12 +42,12 @@ namespace rviz
 FrameManager::FrameManager(boost::shared_ptr<tf::TransformListener> tf)
 {
 <<<<<<< HEAD
-  if (!tf) tf_.reset(new tf::TransformListener(ros::NodeHandle(), ros::Duration(10*60), true));
+  if (!tf) tf_.reset(new tf::TransformListener(ros::NodeHandle(), ros::Duration(60), true));
   else tf_ = tf;
 
 =======
   tf_.reset(new tf::TransformListener(ros::NodeHandle(), ros::Duration(60), true));
->>>>>>> - changing framemanager to only store 1min of tf messages instead of 10
+>>>>>>> dca983613355f641d374dfbd82bc62bc1f1b1095
   setSyncMode( SyncOff );
   setPause(false);
 }

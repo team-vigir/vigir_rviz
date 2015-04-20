@@ -202,8 +202,8 @@ public:
 
   PropertyTreeModel* getPropertyModel() { return property_model_; }
 
-  void setOrthoConfig( Ogre::Viewport* viewport, float width, float height );
   void setCameraConfig( Ogre::Viewport* viewport, Ogre::Matrix4 proj_matrix );
+  void setOrthoConfig( Ogre::Viewport* viewport, float width, float height );
 
 private Q_SLOTS:
   /** @brief Call updateProperties() on all SelectionHandlers in the

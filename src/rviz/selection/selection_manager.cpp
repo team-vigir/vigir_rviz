@@ -709,6 +709,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
   {
       //ROS_INFO("ORTHOGRAPHIC");
 
+      camera_->setCustomProjectionMatrix(false);
       camera_->setProjectionType( Ogre::PT_ORTHOGRAPHIC );
       camera_->setFixedYawAxis( false );
 
@@ -734,7 +735,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
           ortho_height = viewport->getCamera()->getOrthoWindowHeight();
       }
 
-      ROS_INFO("  (%f, %f)  (%f, %f)", width, height, ortho_width, ortho_height);
+      //ROS_INFO("  (%f, %f)  (%f, %f)", width, height, ortho_width, ortho_height);
 
       // mouse coordinates in the ortho CS
       // normalize mouse coordinates, scale to the ortho view, move to center of ortho window
@@ -755,7 +756,7 @@ bool SelectionManager::render(Ogre::Viewport* viewport, Ogre::TexturePtr tex,
       Ogre::Vector3 down = orientation * Ogre::Vector3::UNIT_Y;
       position = position - (down * ty);
 
-      ROS_INFO("  (%f, %f)  (%f, %f, %f)", tx, ty, position.x, position.y, position.z);
+      //ROS_INFO("  (%f, %f)  (%f, %f, %f)", tx, ty, position.x, position.y, position.z);
 
       camera_->setPosition( position );
       camera_->setOrientation( orientation );

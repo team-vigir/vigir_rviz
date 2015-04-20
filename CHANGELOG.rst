@@ -135,6 +135,24 @@ Forthcoming
 * fixing problems with urdfdom_headers 0.3.0
 * Contributors: William Woodall
 
+1.10.16 (2014-05-13)
+--------------------
+* Fix an issue with rendering laser scans: `#762 <https://github.com/ros-visualization/rviz/issues/762>`_
+* Contributors: Vincent Rabaud, William Woodall
+
+1.10.15 (2014-05-01)
+--------------------
+* Forward ported #707
+  Update frame_manager.cpp
+  Changed TF listener to use a dedicated thread.
+* Fix segfault on exit for OSX
+* Fixed rendering of mesh resource type markers with respect to texture rendering and color tinting
+* Fix memory leak in BillboardLine destructor (material not being destroyed correctly)
+* EffortDisplay: Added a check to avoid segfaults when receiving a joint state without efforts
+* Speed up point cloud rendering
+  this is mostly caching some computations and using proper loop iterations
+* Contributors: Hans Gaiser, Jordan Brindza, Mirko, Timm Linder, Vincent Rabaud, William Woodall
+
 1.10.14 (2014-03-04)
 --------------------
 * Fixed a bug in tutorials caused by uninitialized ros::Time here.

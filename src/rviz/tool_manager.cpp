@@ -83,6 +83,7 @@ void ToolManager::removeAll()
   {
     removeTool( i );
   }
+  shortkey_to_tool_map_.clear();
 }
 
 void ToolManager::load( const Config& config )
@@ -137,7 +138,11 @@ void ToolManager::handleChar( QKeyEvent* event, RenderPanel* panel )
   }
 
   // check if the incoming key triggers the activation of another tool
-  Tool* tool = shortkey_to_tool_map_[ event->key() ];
+  Tool* tool = NULL;
+  // need to check if it exists in the map, otherwise it will create an uninitialized Tool* with the event->key() inside shortkey_to_tool_map_ and it will segfault later on when trying to access it
+  if( shortkey_to_tool_map_.find(event->key()) != shortkey_to_tool_map_.end() )
+    tool = shortkey_to_tool_map_[ event->key() ];
+
   if( tool )
   {
     // if there is a incoming tool check if it matches the current tool
